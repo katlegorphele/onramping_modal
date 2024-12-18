@@ -1,42 +1,52 @@
-'use client'
+"use client";
 
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface CurrencyInputProps {
-  label: string
-  value: string
-  onChange: (value: string) => void
-  currency: string
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  currency: string;
 }
 
-export function CurrencyInput({ label, value, onChange, currency }: CurrencyInputProps) {
+export function CurrencyInput({
+  label,
+  value,
+  onChange,
+  currency,
+}: CurrencyInputProps) {
   return (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      <div className="flex">
+    <div className=" ring-1 ring-gray-100 flex justify-between items-center p-2 px-3 rounded-lg">
+      <div className="flex flex-col justify-center pt-2">
+        <Label>{label}</Label>
         <Input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="rounded-r-none"
+          className="rounded-r-none font-bold"
         />
-        <Select defaultValue={currency}>
-          <SelectTrigger className="w-[80px] rounded-l-none">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={currency}>{currency}</SelectItem>
-            {currency === 'ZAR' ? (
-              <SelectItem value="USD">USD</SelectItem>
-            ) : (
-              <SelectItem value="BTC">BTC</SelectItem>
-            )}
-          </SelectContent>
-        </Select>
       </div>
+      <Select defaultValue={currency}>
+        <SelectTrigger className="w-[110px] rounded-lg p-6 text-md font-bold bg-gray-50">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={currency}>{currency}</SelectItem>
+          {currency === "ZAR" ? (
+            <SelectItem value="KES">KES</SelectItem>
+          ) : (
+            <></>
+          )}
+        </SelectContent>
+      </Select>
     </div>
-  )
+  );
 }
-
