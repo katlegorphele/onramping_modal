@@ -1,9 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/app/components/ui/tabs";
 import { CurrencyInput } from "./currency-input";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
+import { useConnectModal } from "thirdweb/react";
+import { darkTheme } from "thirdweb/react";
+import {
+  inAppWallet,
+  createWallet,
+} from "thirdweb/wallets";
+import { thirdwebClient } from "../config/client";
+
+import { defineChain } from "thirdweb";
+import { networkConfig } from "../config/networkConfig";
+const {chainId, rpc} = networkConfig
+
+const chain  = defineChain({id: chainId, rpc})
 
 const tabsTriggerData = [
   {
@@ -93,5 +106,15 @@ export function CryptoExchangeCard() {
 }
 
 const LoginButton = () => {
-  return <Button className="w-full text-xl p-8 font-semibold">Log in</Button>;
+
+  const onConnect = async ()=> {
+  const {connect} = useConnectModal();
+    const wallet = await connect({ client: thirdwebClient, accountAbstraction: {
+    chain,
+    sponsorGas: true,
+  }});
+  console.log("connected to : ", wallet)}
+  return <Button 
+  onClick={onConnect}
+  className="w-full text-xl p-8 font-semibold">Log in</Button>;
 };
