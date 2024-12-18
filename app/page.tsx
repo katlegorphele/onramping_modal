@@ -1,16 +1,18 @@
-import { RampForm } from '../components/ramp-form'
-import { DynamicBackground } from '../components/dynamic-background'
+import { CryptoExchangeCard } from '@/components/crypto-exchange-card'
 
-export default function Page() {
+export default function Home() {
   return (
-    <div className="min-h-screen p-8 relative overflow-hidden">
-      <DynamicBackground />
-      <div className="max-w-4xl mx-auto relative z-10">
-        <h1 className="text-4xl font-bold text-center mb-8 text-gray-900">UNIVERSEL ON/OFF RAMP</h1>
-        <RampForm />
+    <main className="flex flex-col md:flex-row justify-between items-center min-h-screen bg-white p-8">
+      <div className="md:w-1/2 mb-8 md:mb-0">
+        <h1 className="text-5xl font-bold mb-4">Buy uZar in a few steps</h1>
+        <p className="text-xl text-gray-600">
+          Bitcoin, Ethereum, Tether, Solana, and more popular crypto
+        </p>
       </div>
-    </div>
+      <div className="md:w-1/2">
+        <CryptoExchangeCard />
+      </div>
+    </main>
   )
 }
-
 
