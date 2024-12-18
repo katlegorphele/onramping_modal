@@ -14,6 +14,7 @@ interface CurrencyInputProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onCurrencyChange: (value: string) => void;
   currency: string;
 }
 
@@ -21,6 +22,7 @@ export function CurrencyInput({
   label,
   value,
   onChange,
+  onCurrencyChange,
   currency,
 }: CurrencyInputProps) {
   return (
@@ -34,7 +36,7 @@ export function CurrencyInput({
           className="rounded-r-none font-bold"
         />
       </div>
-      <Select defaultValue={currency}>
+      <Select onValueChange={onCurrencyChange} defaultValue={currency}>
         <SelectTrigger className="w-[110px] rounded-lg p-6 text-md font-bold bg-gray-50">
           <SelectValue />
         </SelectTrigger>
