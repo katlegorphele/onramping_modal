@@ -41,6 +41,51 @@ export function CryptoExchangeCard() {
     ZAR: 0,
   });
   const [currency, setCurrency] = useState<string>("ZAR");
+  const [mpesaNumber, setMpesaNumber] = useState<string>("");
+  const [bankAccount, setBankAccount] = useState<string>("");
+
+  const handleBuy = async () => {
+    if (currency === "KES" && !mpesaNumber) {
+      alert("Please provide an M-Pesa number.");
+      return;
+    }
+    if (currency === "ZAR" && !bankAccount) {
+      alert("Please provide a bank account number.");
+      return;
+    }
+
+    try {
+      const response = await axios.post("/api/buy-token", {
+        amount: Number(payAmount),
+        currency,
+        mpesaNumber: currency === "KES" ? mpesaNumber : undefined,
+        bankAccount: currency === "ZAR" ? bankAccount : undefined,
+      });
+
+      if (response.data.success) {
+        alert(response.data.message);
+      }
+    } catch (error: any) {
+      console.error("Error buying token:", error);
+      alert(error.response?.data?.message || "Failed to buy token. Please try again.");
+    }
+  };
+
+  const handleSell = async () => {
+    try {
+      const response = await axios.post("/api/sell-token", {
+        amount: Number(payAmount),
+      });
+
+      if (response.data.success) {
+        alert(response.data.message);
+      }
+    } catch (error: any) {
+      console.error("Error selling token:", error);
+      alert(error.response?.data?.message || "Failed to sell token. Please try again.");
+    }
+  };
+
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -48,12 +93,11 @@ export function CryptoExchangeCard() {
     setPayAmount("");
     setReceiveAmount("");
     setCurrency("ZAR");
+    setMpesaNumber("");
   };
 
   const handleCurrencyChanged = (value: string) => {
-    console.log("Received Currency : ", value);
     setCurrency(value);
-    console.log("Set current : ", currency);
     const calculatedReceiveAmount = calculateExchangeAmount(payAmount, {
       selectedCurrency: value,
     });
@@ -101,16 +145,17 @@ export function CryptoExchangeCard() {
 
   const handlePayAmountChange = (value: string) => {
     setPayAmount(value);
+    setReceiveAmount(calculateExchangeAmount(value, { selectedCurrency: currency }));
 
-    try {
-      const calculatedReceiveAmount = calculateExchangeAmount(value, {
-        selectedCurrency: currency,
-      });
-      setReceiveAmount(calculatedReceiveAmount);
-    } catch (error) {
-      console.error("Error calculating exchange amount:", error);
-      setReceiveAmount("0");
-    }
+    // try {
+    //   const calculatedReceiveAmount = calculateExchangeAmount(value, {
+    //     selectedCurrency: currency,
+    //   });
+    //   setReceiveAmount(calculatedReceiveAmount);
+    // } catch (error) {
+    //   console.error("Error calculating exchange amount:", error);
+    //   setReceiveAmount("0");
+    // }
   };
 
   useEffect(() => {
@@ -154,7 +199,40 @@ export function CryptoExchangeCard() {
               currency="ZAR"
               onCurrencyChange={handleCurrencyChanged}
             />
-            <p className="text-sm text-gray-500">460-379,260 ZAR</p>
+            {currency === "KES" && (
+              <div>
+                <label htmlFor="mpesa-number" className="text-sm text-gray-500 mx-3 font-semibold">
+                  M-Pesa Number
+                </label>
+                <input
+                  id="mpesa-number"
+                  type="text"
+                  value={mpesaNumber}
+                  onChange={(e) => setMpesaNumber(e.target.value)}
+                  className="block w-full p-2 text-sm rounded-md"
+                  placeholder="Enter your M-Pesa number"
+                />
+              </div>
+            )}
+            {currency === "ZAR" && (
+              <div>
+                <label
+                  htmlFor="bank-account"
+                  className="text-sm text-gray-500 mx-3 font-semibold"
+                >
+                  Bank Account Number
+                </label>
+                <input
+                  id="bank-account"
+                  type="text"
+                  value={bankAccount}
+                  onChange={(e) => setBankAccount(e.target.value)}
+                  className="block w-full p-2 text-sm rounded-md"
+                  placeholder="Enter your bank account number"
+                />
+              </div>
+            )}
+            {/* <p className="text-sm text-gray-500">1-5000 ZAR</p> */}
             <CurrencyInput
               label="You'll receive"
               value={receiveAmount}
@@ -162,9 +240,12 @@ export function CryptoExchangeCard() {
               currency="uZar"
               onCurrencyChange={handleCurrencyChanged}
             />
-            <p className="text-sm text-gray-500">1 uZar = 18.3932 ZAR</p>
+            <p className="text-sm text-gray-500 mx-3">1 uZar = 1 ZAR</p>
 
-            <LoginButton />
+            {/* <LoginButton /> */}
+            <Button onClick={handleBuy} className="w-full text-xl p-8 font-semibold">
+              Buy
+            </Button>
           </div>
         </TabsContent>
 
@@ -188,7 +269,10 @@ export function CryptoExchangeCard() {
             />
             <p className="text-sm text-gray-500">1 uZar = 18.3932 ZAR</p>
 
-            <LoginButton />
+            {/* <LoginButton /> */}
+            <Button onClick={handleSell} className="w-full text-xl p-8 font-semibold">
+              Sell
+            </Button>
           </div>
         </TabsContent>
       </Tabs>
