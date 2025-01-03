@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
+  service:"gmail",
   host: 'smtp.gmail.com',
   port: 587,
   secure: false,
@@ -23,7 +24,7 @@ async function sendTransactionEmail(
 
   try {
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: 'uZAR Team',//process.env.NEXT_PUBLIC_BURNER_USERNAME,
       to: recipientEmail,
       subject: 'uZar Purchase Confirmation',
       text: `
