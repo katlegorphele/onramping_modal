@@ -43,6 +43,7 @@ export function CryptoExchangeCard() {
   const [currency, setCurrency] = useState<string>("ZAR");
   const [mpesaNumber, setMpesaNumber] = useState<string>("");
   const [bankAccount, setBankAccount] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
 
   const handleBuy = async () => {
     if (currency === "KES" && !mpesaNumber) {
@@ -60,7 +61,9 @@ export function CryptoExchangeCard() {
         currency,
         mpesaNumber: currency === "KES" ? mpesaNumber : undefined,
         bankAccount: currency === "ZAR" ? bankAccount : undefined,
+        email: email || undefined,
       });
+      console.log('Email:', email);
 
       if (response.data.success) {
         alert(response.data.message);
@@ -75,6 +78,7 @@ export function CryptoExchangeCard() {
     try {
       const response = await axios.post("/api/sell-token", {
         amount: Number(payAmount),
+        email: email || undefined,
       });
 
       if (response.data.success) {
@@ -147,15 +151,6 @@ export function CryptoExchangeCard() {
     setPayAmount(value);
     setReceiveAmount(calculateExchangeAmount(value, { selectedCurrency: currency }));
 
-    // try {
-    //   const calculatedReceiveAmount = calculateExchangeAmount(value, {
-    //     selectedCurrency: currency,
-    //   });
-    //   setReceiveAmount(calculatedReceiveAmount);
-    // } catch (error) {
-    //   console.error("Error calculating exchange amount:", error);
-    //   setReceiveAmount("0");
-    // }
   };
 
   useEffect(() => {
@@ -199,6 +194,23 @@ export function CryptoExchangeCard() {
               currency="ZAR"
               onCurrencyChange={handleCurrencyChanged}
             />
+
+            <div>
+              <label
+                htmlFor="email"
+                className="text-sm text-gray-500 mx-3 font-semibold"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
+                placeholder="Enter your email for transaction updates"
+              />
+            </div>
             {currency === "KES" && (
               <div>
                 <label htmlFor="mpesa-number" className="text-sm text-gray-500 mx-3 font-semibold">
