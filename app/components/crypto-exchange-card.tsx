@@ -209,7 +209,7 @@ export function CryptoExchangeCard() {
                   type="text"
                   value={mpesaNumber}
                   onChange={(e) => setMpesaNumber(e.target.value)}
-                  className="block w-full p-2 text-sm rounded-md"
+                  className="ring-1 ring-gray-100 flex justify-between items-center p-2 px-3 rounded-lg"
                   placeholder="Enter your M-Pesa number"
                 />
               </div>
@@ -301,7 +301,7 @@ const LoginButton = () => {
 
   return (
     <Button
-      onClick={account ? onConnect : () => {}}
+      onClick={account ? onConnect : () => { }}
       className="w-full text-xl p-8 font-semibold"
     >
       {account ? "Log in" : "Buy"}
