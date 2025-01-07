@@ -1,57 +1,12 @@
 import { NextResponse } from "next/server";
-import nodemailer from 'nodemailer';
+import kotaniPay from '@api/kotani-pay';
+import sendTransactionEmail from "@/app/utils/sendMail";
 
-const transporter = nodemailer.createTransport({
-  service:"gmail",
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.NEXT_PUBLIC_BURNER_USERNAME,
-    pass: process.env.NEXT_PUBLIC_BURNER_PASSWORD
-  }
-});
-
-async function sendTransactionEmail(
-  recipientEmail: string | undefined, 
-  amount: number,
-  currency: string,
-  mpesaNumber?: string,
-  bankAccount?: string,
-  transactionId?: string
-) {
-  if (!recipientEmail) return;
-
-  try {
-    await transporter.sendMail({
-      from: 'uZAR Team',//process.env.NEXT_PUBLIC_BURNER_USERNAME,
-      to: recipientEmail,
-      subject: 'uZar Purchase Confirmation',
-      text: `
-Dear valued customer,
-
-Your purchase of ${amount} uZar has been successful.
-${currency === "KES" 
-  ? `Payment method: M-Pesa (${mpesaNumber})`
-  : `Payment method: Bank Transfer (${bankAccount})`
-}
-
-Transaction ID: ${transactionId}
-
-Thank you for using our service!
-
-Best regards,
-The uZar Team
-      `
-    });
-  } catch (error) {
-    console.error('Failed to send email notification:', error);
-  }
-}
 
 export async function POST(req: Request) {
   try {
-    const { amount, currency, mpesaNumber, bankAccount, email } = await req.json();
+    const { amount, currency, mpesaNumber, bankAccount, email, receiverAddress } = await req.json();
+    console.log('Vars:', amount, currency, mpesaNumber, bankAccount, email);  
 
     // Validate required fields
     if (!amount || amount <= 0) {
@@ -87,27 +42,73 @@ export async function POST(req: Request) {
     // Generate transaction ID
     const transactionId = "txn_" + Math.random().toString(36).substr(2, 9);
 
-    // Send email if provided
-    if (email) {
-      await sendTransactionEmail(
-        email,
-        amount,
-        currency,
-        mpesaNumber,
-        bankAccount,
-        transactionId
+    try {
+      const transactionPayload =  {
+        paymentMethod: "CARD" as "CARD" | "PAYBYBANK",
+        currency: currency as "KES" |"ZAR" ,
+        fullName: 'Katlego R Phele',
+        phoneNumber: '+27681976458',
+        referenceId: '5f9b2c7b9c9d6b0017b4e6b1',
+        amount: amount,
+        walletId: process.env.NEXT_PUBLIC_KOTANI_WALLET_ID,
+      }
+
+
+      const apiKey = process.env.NEXT_PUBLIC_KOTANI_API_KEY;
+      if (!apiKey) {
+        throw new Error("Kotani API key is not defined");
+      }
+      kotaniPay.auth(apiKey);
+      // console.log('Payload:', transactionPayload);
+      // generate random txn reference
+      const ref_id = Math.random().toString(36).substr(2, 9);
+      const kotaniPayResponse = await kotaniPay.onrampController_onramp({
+        bankCheckout: {paymentMethod: 'CARD', fullName: 'KAT', phoneNumber: '+27681976458'},
+        currency: 'ZAR',
+        chain: 'LISK',
+        token: 'CUSD',
+        fiatAmount: 11,
+        receiverAddress,
+        referenceId: ref_id,
+      })
+      console.log('KotaniPay Response:', kotaniPayResponse);
+
+      const redirectUrl = kotaniPayResponse.data?.data?.redirectUrl;
+
+      // Send email notification
+      if (email) {
+        await sendTransactionEmail(
+          email,
+          amount,
+          currency,
+          mpesaNumber,
+          bankAccount,
+          transactionId,
+          kotaniPayResponse.data?.reference as string | undefined
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: `Successfully initiated purchase of ${amount} uZar using ${currency === "KES" ? `M-Pesa (${mpesaNumber})` : `bank account (${bankAccount})`
+          }.`,
+        transactionId,
+        kotaniPayReference: kotaniPayResponse.data?.reference,
+        amountReceived: amount,
+        redirectUrl,
+      });
+
+    } catch (kotaniError) {
+      console.error("KotaniPay API error:", kotaniError);
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Failed to process payment. Please try again.",
+          error: (kotaniError as any).message
+        },
+        { status: 500 }
       );
     }
-
-    // Return success response
-    return NextResponse.json({
-      success: true,
-      message: `Successfully purchased ${amount} uZar using ${
-        currency === "KES" ? `M-Pesa (${mpesaNumber})` : `bank account (${bankAccount})`
-      }.`,
-      transactionId,
-      amountReceived: amount,
-    });
 
   } catch (error) {
     console.error("Error processing request:", error);

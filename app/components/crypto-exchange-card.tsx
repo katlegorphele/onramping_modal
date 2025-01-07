@@ -9,11 +9,12 @@ import {
 } from "@/app/components/ui/tabs";
 import { CurrencyInput } from "./currency-input";
 import { Button } from "@/app/components/ui/button";
-import { useActiveAccount, useConnectModal } from "thirdweb/react";
 import { defineChain } from "thirdweb";
 import { networkConfig } from "../config/networkConfig";
 import axios from "axios";
-import { thirdwebClient } from "../config/client";
+import Login from "./Login";
+import { BankInput } from "./bank-input";
+import { useActiveAccount } from "thirdweb/react";
 
 const { chainId, rpc } = networkConfig;
 
@@ -30,6 +31,7 @@ interface ExchangeRates {
 const tabsTriggerData = [
   { value: "buy", label: "Buy" },
   { value: "sell", label: "Sell" },
+  { value: "Transfer", label: "Transfer" },
 ];
 
 export function CryptoExchangeCard() {
@@ -44,16 +46,68 @@ export function CryptoExchangeCard() {
   const [mpesaNumber, setMpesaNumber] = useState<string>("");
   const [bankAccount, setBankAccount] = useState<string>("");
   const [email, setEmail] = useState<string>("");
+  const [addressTo, setAddressTo] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleBuy = async () => {
+  const account = useActiveAccount();
+
+  const validateInput = () => {
+    if (!payAmount || Number(payAmount) <= 0) {
+      alert("Please enter a valid amount.");
+      return false;
+    }
+
+    if (!email) {
+      alert("Please provide an email address for transaction updates.");
+      return false;
+    }
+
     if (currency === "KES" && !mpesaNumber) {
       alert("Please provide an M-Pesa number.");
-      return;
+      return false;
     }
+
     if (currency === "ZAR" && !bankAccount) {
-      alert("Please provide a bank account number.");
+      alert("Please provide bank account details.");
+      return false;
+    }
+
+    return true;
+  };
+
+
+  const handleBuy = async () => {
+    // if (currency === "KES" && !mpesaNumber) {
+    //   alert("Please provide an M-Pesa number.");
+    //   return;
+    // }
+    // if (currency === "ZAR" && !bankAccount) {
+    //   alert("Please provide a bank account number.");
+    //   return;
+    // }
+
+    // try {
+    //   const response = await axios.post("/api/buy-token", {
+    //     amount: Number(payAmount),
+    //     currency,
+    //     mpesaNumber: currency === "KES" ? mpesaNumber : undefined,
+    //     bankAccount: currency === "ZAR" ? bankAccount : undefined,
+    //     email: email || undefined,
+    //   });
+    //   console.log('Email:', email);
+
+    //   if (response.data.success) {
+    //     alert(response.data.message);
+    //   }
+    // } catch (error: any) {
+    //   console.error("Error buying token:", error);
+    //   alert(error.response?.data?.message || "Failed to buy token. Please try again.");
+    // }
+    if (!validateInput()) {
       return;
     }
+
+    setIsLoading(true);
 
     try {
       const response = await axios.post("/api/buy-token", {
@@ -61,16 +115,30 @@ export function CryptoExchangeCard() {
         currency,
         mpesaNumber: currency === "KES" ? mpesaNumber : undefined,
         bankAccount: currency === "ZAR" ? bankAccount : undefined,
-        email: email || undefined,
+        email: email,
+        receiverAddress: account?.address,
       });
-      console.log('Email:', email);
 
-      if (response.data.success) {
-        alert(response.data.message);
+      // if (response.data.success) {
+      //   alert(response.data.message);
+      //   setPayAmount("");
+      //   setReceiveAmount("");
+      //   setBankAccount("");
+      //   setMpesaNumber("");
+      // }
+      if (response.data?.success && response.data?.redirectUrl) {
+        window.location.href = response.data?.redirectUrl; // Redirect user to the payment URL
+      } else {
+        console.error('Payment initiation failed:', response.data?.message);
       }
     } catch (error: any) {
       console.error("Error buying token:", error);
-      alert(error.response?.data?.message || "Failed to buy token. Please try again.");
+      alert(
+        error.response?.message ||
+        "Failed to process transaction. Please try again later."
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -183,6 +251,79 @@ export function CryptoExchangeCard() {
             </TabsTrigger>
           ))}
         </TabsList>
+        <TabsContent value="Transfer">
+          <div className="space-y-4">
+
+            <div>
+              <label
+                htmlFor="addressTo"
+                className="text-sm text-gray-500 mx-3 font-semibold"
+              >
+                Address To
+              </label>
+              <input
+                id="addressTo"
+                type="text"
+                onChange={(e) => setAddressTo(e.target.value)}
+                className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
+                placeholder="Enter address to transfer to"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="amount"
+                className="text-sm text-gray-500 mx-3 font-semibold"
+              >
+                Amount to transfer
+              </label>
+              <input
+                id="amount"
+                type="text"
+                value={'0.00'}
+                onChange={(e) => setAddressTo(e.target.value)}
+                className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
+                placeholder="Enter your email for transaction updates"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="email"
+                className="text-sm text-gray-500 mx-3 font-semibold"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
+                placeholder="Enter your email for transaction updates"
+              />
+            </div>
+            
+            {currency === "KES" && (
+              <div>
+                <label htmlFor="mpesa-number" className="text-sm text-gray-500 mx-3 font-semibold">
+                  M-Pesa Number
+                </label>
+                <input
+                  id="mpesa-number"
+                  type="text"
+                  value={mpesaNumber}
+                  onChange={(e) => setMpesaNumber(e.target.value)}
+                  className="ring-1 ring-gray-100 flex justify-between items-center p-2 px-3 rounded-lg"
+                  placeholder="Enter your M-Pesa number"
+                />
+              </div>
+            )}
+
+            <Button onClick={handleBuy} className="w-full text-xl p-8 font-semibold">
+              Buy
+            </Button>
+          </div>
+
+        </TabsContent>
 
         {/* buy tab */}
         <TabsContent value="buy">
@@ -228,20 +369,12 @@ export function CryptoExchangeCard() {
             )}
             {currency === "ZAR" && (
               <div>
-                <label
-                  htmlFor="bank-account"
-                  className="text-sm text-gray-500 mx-3 font-semibold"
-                >
-                  Bank Account Number
-                </label>
-                <input
-                  id="bank-account"
-                  type="text"
+                <BankInput
+                  label="Enter Bank Details"
                   value={bankAccount}
-                  onChange={(e) => setBankAccount(e.target.value)}
-                  className="block w-full p-2 text-sm rounded-md"
-                  placeholder="Enter your bank account number"
-                />
+                  onChange={setBankAccount}
+                  onBankChange={(bank) => console.log(bank)}
+                  selectedBank={bankAccount} />
               </div>
             )}
             {/* <p className="text-sm text-gray-500">1-5000 ZAR</p> */}
@@ -292,33 +425,6 @@ export function CryptoExchangeCard() {
   );
 }
 
-const LoginButton = () => {
-  const { connect } = useConnectModal();
-  const account = useActiveAccount();
 
-  const onConnect = async () => {
-    try {
-      const wallet = await connect({
-        client: thirdwebClient,
-        accountAbstraction: {
-          chain,
-          sponsorGas: true,
-        },
-      });
-      console.log("connected to : ", wallet);
-    } catch (error) {
-      console.error("Connection failed:", error);
-    }
-  };
-
-  return (
-    <Button
-      onClick={account ? onConnect : () => { }}
-      className="w-full text-xl p-8 font-semibold"
-    >
-      {account ? "Log in" : "Buy"}
-    </Button>
-  );
-};
 
 export default CryptoExchangeCard;

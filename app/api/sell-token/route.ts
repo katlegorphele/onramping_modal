@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import nodemailer from 'nodemailer';
+import kotaniPay from '@api/kotani-pay';
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
