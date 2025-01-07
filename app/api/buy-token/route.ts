@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import kotaniPay from '@api/kotani-pay';
-import sendTransactionEmail from "@/app/utils/sendMail";
+import {sendPaymentTransactionEmail} from "@/app/utils/sendMail";
 
 
 export async function POST(req: Request) {
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
 
       // Send email notification
       if (email) {
-        await sendTransactionEmail(
+        await sendPaymentTransactionEmail(
           email,
           amount,
           currency,
@@ -90,7 +90,7 @@ export async function POST(req: Request) {
 
       return NextResponse.json({
         success: true,
-        message: `Successfully initiated purchase of ${amount} uZar using ${currency === "KES" ? `M-Pesa (${mpesaNumber})` : `bank account (${bankAccount})`
+        message: `Successfully initiated purchase of ${amount} UZAR using ${currency === "KES" ? `M-Pesa (${mpesaNumber})` : `bank account (${bankAccount})`
           }.`,
         transactionId,
         kotaniPayReference: kotaniPayResponse.data?.reference,

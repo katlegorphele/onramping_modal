@@ -25,23 +25,23 @@ async function sendTransactionEmail(
   // If no email provided, silently return
   if (!recipientEmail) return;
 
-  const subject = `uZar ${transactionType} Confirmation`;
+  const subject = `UZAR ${transactionType} Confirmation`;
 
   let text = `Dear valued customer,\n\n`;
   if (transactionType === 'purchase') {
-    text += `Your purchase of ${amount} uZar has been successful.\n`;
+    text += `Your purchase of ${amount} UZAR has been successful.\n`;
     if (currency === "KES") {
       text += `Payment method: M-Pesa (${mpesaNumber})\n`;
     } else {
       text += `Payment method: Bank Transfer (Account: ${bankAccount})\n`;
     }
   } else {
-    text += `Your sale of ${amount} uZar has been successful.\n`;
+    text += `Your sale of ${amount} UZAR has been successful.\n`;
   }
 
   text += `\nTransaction ID: ${transactionId}\n`;
   text += `\nThank you for using our service!\n`;
-  text += `\nBest regards,\nThe uZar Team`;
+  text += `\nBest regards,\nThe UZAR Team`;
 
   try {
     await transporter.sendMail({
@@ -74,9 +74,9 @@ export async function POST(req: Request) {
     const transactionId = "txn_" + Math.random().toString(36).substr(2, 9);
     const simulatedResponse = {
       success: true,
-      message: `Successfully sold ${amount} uZar.`,
+      message: `Successfully sold ${amount} UZAR.`,
       transactionId: transactionId,
-      payoutAmount: amount, // Assume 1 uZar = 1 unit of the local currency (ZAR/USD/KES)
+      payoutAmount: amount, // Assume 1 UZAR = 1 unit of the local currency (ZAR/USD/KES)
     };
     await sendTransactionEmail(
       email,

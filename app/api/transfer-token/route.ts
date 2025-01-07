@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import sendTransactionEmail from "@/app/utils/sendMail";
+import {sendTransferEmail} from "@/app/utils/sendMail";
 
 export async function POST(req: Request) {
     try {
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
 
         // Send transaction email
         if (email) {
-            sendTransactionEmail(email, amount, "UZAR", undefined, undefined, transactionId, undefined, to);
+            sendTransferEmail(email, amount,to);
         }
 
         return NextResponse.json(

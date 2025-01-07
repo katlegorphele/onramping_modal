@@ -12,7 +12,6 @@ import { Button } from "@/app/components/ui/button";
 import { defineChain } from "thirdweb";
 import { networkConfig } from "../config/networkConfig";
 import axios from "axios";
-import Login from "./Login";
 import { BankInput } from "./bank-input";
 import { useActiveAccount } from "thirdweb/react";
 
@@ -51,6 +50,25 @@ export function CryptoExchangeCard() {
 
   const account = useActiveAccount();
 
+  const validateTransferInput = () => {
+    if (!addressTo) {
+      alert("Please provide a valid address.");
+      return false;
+    }
+
+    if (!payAmount || Number(payAmount) <= 0) {
+      alert("Please enter a valid amount.");
+      return false;
+    }
+
+    if (!email) {
+      alert("Please provide an email address for transaction updates.");
+      return false;
+    }
+
+    return true;
+  }
+
   const validateInput = () => {
     if (!payAmount || Number(payAmount) <= 0) {
       alert("Please enter a valid amount.");
@@ -75,6 +93,36 @@ export function CryptoExchangeCard() {
     return true;
   };
 
+  const handleTransfer = async () => {
+    if (!validateTransferInput()) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await axios.post("/api/transfer-token", {
+        amount: Number(payAmount),
+        to: addressTo,
+        email: email,
+      });
+
+      if (response.data.success) {
+        alert(response.data.message);
+        setPayAmount("");
+        setReceiveAmount("");
+        setAddressTo("");
+      }
+    } catch (error: any) {
+      console.error("Error transferring token:", error);
+      alert(
+        error.response?.message ||
+        "Failed to process transaction. Please try again later."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const handleBuy = async () => {
     // if (currency === "KES" && !mpesaNumber) {
@@ -279,10 +327,9 @@ export function CryptoExchangeCard() {
               <input
                 id="amount"
                 type="text"
-                value={'0.00'}
-                onChange={(e) => setAddressTo(e.target.value)}
+                onChange={(e) => setPayAmount(e.target.value)}
                 className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
-                placeholder="Enter your email for transaction updates"
+                placeholder="0.00"
               />
             </div>
             <div>
@@ -301,24 +348,7 @@ export function CryptoExchangeCard() {
                 placeholder="Enter your email for transaction updates"
               />
             </div>
-            
-            {currency === "KES" && (
-              <div>
-                <label htmlFor="mpesa-number" className="text-sm text-gray-500 mx-3 font-semibold">
-                  M-Pesa Number
-                </label>
-                <input
-                  id="mpesa-number"
-                  type="text"
-                  value={mpesaNumber}
-                  onChange={(e) => setMpesaNumber(e.target.value)}
-                  className="ring-1 ring-gray-100 flex justify-between items-center p-2 px-3 rounded-lg"
-                  placeholder="Enter your M-Pesa number"
-                />
-              </div>
-            )}
-
-            <Button onClick={handleBuy} className="w-full text-xl p-8 font-semibold">
+            <Button onClick={handleTransfer} className="w-full text-xl p-8 font-semibold">
               Buy
             </Button>
           </div>
