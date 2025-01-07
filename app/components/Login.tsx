@@ -1,14 +1,12 @@
 import React from 'react'
-import { useActiveAccount, useConnectModal } from 'thirdweb/react';
 import { thirdwebClient } from '../config/client';
-import { Button } from './ui/button';
 import { defineChain } from 'thirdweb';
 import { ConnectButton } from 'thirdweb/react';
 import { networkConfig } from '../config/networkConfig';
 
 const Login = () => {
   const {chainId} = networkConfig;
-    const { connect } = useConnectModal();
+
 
   
     return (

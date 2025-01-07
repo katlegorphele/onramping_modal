@@ -9,18 +9,34 @@ import {
 } from "@/app/components/ui/tabs";
 import { CurrencyInput } from "./currency-input";
 import { Button } from "@/app/components/ui/button";
-import { defineChain } from "thirdweb";
+import { defineChain, getContract, readContract } from "thirdweb";
 import { networkConfig } from "../config/networkConfig";
 import axios from "axios";
 import { BankInput } from "./bank-input";
 import { useActiveAccount } from "thirdweb/react";
+import { thirdwebClient } from "../config/client";
 
-const { chainId, rpc } = networkConfig;
+
+const { uZarContractAddress, rampContractAddress, chainId, rpc } = networkConfig;
 
 const EXCHANGE_RATE_URL =
   "https://v6.exchangerate-api.com/v6/6c2c521a02e3eb57efa066fa/latest/ZAR";
 
 const chain = defineChain({ id: chainId, rpc });
+
+const transactionContract = getContract({
+  client: thirdwebClient,
+  chain: defineChain(chainId),
+  address: rampContractAddress,
+
+});
+
+const uzarContract = getContract({
+  client: thirdwebClient,
+  chain: defineChain(chainId),
+  address: uZarContractAddress,
+
+});
 
 interface ExchangeRates {
   KES: number;
@@ -101,18 +117,23 @@ export function CryptoExchangeCard() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post("/api/transfer-token", {
-        amount: Number(payAmount),
-        to: addressTo,
-        email: email,
+      // get token allowance
+      const allowance = await readContract({
+        contract: uzarContract,
+        method:
+          "function allowance(address owner, address spender) view returns (uint256)",
+        params: [account?.address || "", rampContractAddress],
       });
+      console.log(allowance);
+      console.log(account)
 
-      if (response.data.success) {
-        alert(response.data.message);
-        setPayAmount("");
-        setReceiveAmount("");
-        setAddressTo("");
-      }
+      // const response = await axios.post("/api/transfer-token", {
+      //   amount: Number(payAmount),
+      //   to: addressTo,
+      //   email: email,
+      // });
+
+
     } catch (error: any) {
       console.error("Error transferring token:", error);
       alert(
