@@ -127,6 +127,7 @@ export function CryptoExchangeCard() {
       console.log(allowance);
       
      if (allowance < payAmount) {
+          console.log('Approving', payAmount)
           //approve uZAR
             const transaction = prepareContractCall({
               contract: uzarContract,
@@ -138,7 +139,7 @@ export function CryptoExchangeCard() {
                 transaction,
                 account,
               });
-              console.log('TX Hash', transactionHash)
+              console.log('Approval confirmation', transactionHash)
             } else {
               throw new Error("Account is undefined");
             }
@@ -150,11 +151,10 @@ export function CryptoExchangeCard() {
 
 
       // transfer token
-        console.log('Transferring', payAmount)
         const transferTransaction = prepareContractCall({
         contract: transactionContract,
         method: "function OnOffRamp(address,uint256,string,string)",
-        params: [addressTo, toWei(payAmount), transactionId, email],
+        params: [addressTo, payAmount, transactionId, email],
       });
 
       if (account) {
@@ -162,7 +162,7 @@ export function CryptoExchangeCard() {
           transaction: transferTransaction,
           account,
         });
-        console.log('Transaction Hash:', transactionHash);
+        console.log('Transfer Confirmation:', transactionHash);
         
         const response = await axios.post("/api/transfer-token", {
           amount: Number(payAmount),
