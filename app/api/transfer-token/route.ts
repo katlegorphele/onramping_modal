@@ -1,12 +1,5 @@
 import { NextResponse } from "next/server";
 import { sendTransferEmail } from "@/app/utils/sendMail";
-import { networkConfig } from "@/app/config/networkConfig";
-import rampABI from "@/blockchain/abis/uzarRamp.json";
-import uzarABI from "@/blockchain/abis/uzarToken.json";
-import { defineChain, getContract, prepareContractCall, readContract, sendTransaction } from "thirdweb";
-import { thirdwebClient } from "@/app/config/client";
-import { uzarContractABI, rampContractABI } from "@/blockchain/blockchainConstants";
-const { uZarContractAddress, rampContractAddress, chainId } = networkConfig;
 
 
 
@@ -39,9 +32,7 @@ export async function POST(req: Request) {
             );
         }
 
-        // Generate transaction ID
-        const transactionId = "txn_" + Math.random().toString(36).substr(2, 9);
-
+       
         // Send transaction email
          if (email) {
              sendTransferEmail(email, amount,to, txHash);
