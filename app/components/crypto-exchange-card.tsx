@@ -126,12 +126,12 @@ export function CryptoExchangeCard() {
       });
       console.log(allowance);
       
-     if (allowance < BigInt(payAmount)) {
+     if (allowance < payAmount) {
           //approve uZAR
             const transaction = prepareContractCall({
               contract: uzarContract,
               method: "function approve(address,uint256)",
-              params: [rampContractAddress, toWei(payAmount)],
+              params: [rampContractAddress, BigInt(payAmount)],
             });
             if (account) {
               const { transactionHash } = await sendTransaction({
@@ -150,6 +150,7 @@ export function CryptoExchangeCard() {
 
 
       // transfer token
+        console.log('Transferring', payAmount)
         const transferTransaction = prepareContractCall({
         contract: transactionContract,
         method: "function OnOffRamp(address,uint256,string,string)",
@@ -420,7 +421,7 @@ export function CryptoExchangeCard() {
               />
             </div>
             <Button onClick={handleTransfer} className="w-full text-xl p-8 font-semibold">
-              Buy
+              Transfer
             </Button>
           </div>
 
