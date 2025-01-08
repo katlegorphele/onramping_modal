@@ -10,29 +10,13 @@ const { uZarContractAddress, rampContractAddress, chainId } = networkConfig;
 
 
 
-const transactionContract = getContract({
-    client: thirdwebClient,
-    chain: defineChain(chainId),
-    address: rampContractAddress,
-
-});
-
-const uzarContract = getContract({
-    client: thirdwebClient,
-    chain: defineChain(chainId),
-    address: uZarContractAddress,
-
-});
-
-
-
 export async function POST(req: Request) {
 
 
 
     try {
         // get Address to, Amount
-        const { to, amount, email, account } = await req.json();
+        const { to, amount, email, txHash } = await req.json();
 
         // Validate required fields
         if (!to) {
@@ -58,37 +42,10 @@ export async function POST(req: Request) {
         // Generate transaction ID
         const transactionId = "txn_" + Math.random().toString(36).substr(2, 9);
 
-        // check user abince
-        const allowance = await readContract({
-            contract: uzarContract,
-            method:
-                "function allowance(address owner, address spender) view returns (uint256)",
-            params: [account.address, rampContractAddress],
-        });
-        console.log(allowance);
-        console.log(account)
-
-        if (allowance < amount) {
-            const transaction = prepareContractCall({
-                contract: uzarContract,
-                method: "function approve(address,uint256)",
-                params: [rampContractAddress, amount],
-            });
-
-            await sendTransaction({
-                transaction,
-                account,
-            });
-        }
-
-        console.log("Allowance approved");
-
-
-
         // Send transaction email
-        // if (email) {
-        //     sendTransferEmail(email, amount,to);
-        // }
+         if (email) {
+             sendTransferEmail(email, amount,to, txHash);
+         }
 
         return NextResponse.json(
             {

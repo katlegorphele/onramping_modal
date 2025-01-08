@@ -15,7 +15,7 @@ import axios from "axios";
 import { BankInput } from "./bank-input";
 import { useActiveAccount } from "thirdweb/react";
 import { thirdwebClient } from "../config/client";
-
+import { prepareContractCall, sendTransaction } from "thirdweb";
 
 const { uZarContractAddress, rampContractAddress, chainId, rpc } = networkConfig;
 
@@ -125,7 +125,48 @@ export function CryptoExchangeCard() {
         params: [account?.address || "", rampContractAddress],
       });
       console.log(allowance);
-      console.log(account)
+      
+     if (parseInt(allowance) < BigInt(payAmount) * BigInt(10 ** 18)) {
+          //approve uZAR
+            const transaction = await prepareContractCall({
+              contract: uzarContract,
+              method: "function approve(address,uint256)",
+              params: [rampContractAddress, BigInt(payAmount) * BigInt(10 ** 18)],
+            });
+            const { transactionHash } = await sendTransaction({
+              transaction,
+              account,
+            });
+        console.log('TX Hash', transactionHash)
+        }
+
+      // transfer token
+        const transferTransaction = prepareContractCall({
+        contract: transactionContract,
+        method: "function OnOffRamp(address,uint256,string,string)",
+        params: [addressTo, BigInt(payAmount) * BigInt(10 ** 18), refId, process.env.NEXT_PUBLIC_KOTANI_FIAT_WALLET_ID as string],
+      });
+
+      if (account) {
+        const {transactionHash} = await sendTransaction({
+          transaction: transferTransaction,
+          account,
+        });
+        console.log('Transaction Hash:', transactionHash);
+        
+        const response = await axios.post("/api/transfer-token", {
+          amount: Number(payAmount),
+          to: addressTo,
+          email: email,
+          txHash: transactionHash,
+        });
+  
+        if (response.data.success) {
+          alert(response.data.message);
+        }
+      } else {
+        throw new Error("Account is undefined");
+      }
 
       // const response = await axios.post("/api/transfer-token", {
       //   amount: Number(payAmount),

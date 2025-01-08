@@ -100,9 +100,11 @@ export async function sendTransferEmail(
     recipientEmail: string | undefined,
     amount: number,
     to: string | undefined,
+    txHash: string | undefined,
 ) {
     if (!recipientEmail) return;
     if(!to) return;
+    if(!txHash) return;
 
     try {
         await transporter.sendMail({
@@ -113,6 +115,8 @@ export async function sendTransferEmail(
       Dear valued customer,
       
       You have successfully transferred ${amount} UZAR to ${to}.
+      View blockchain receipt:
+      https://sepolia.scrollscan.com/tx/${txHash}
       
       Thank you for using our service!
       
