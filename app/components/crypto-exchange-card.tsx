@@ -9,7 +9,7 @@ import {
 } from "@/app/components/ui/tabs";
 import { CurrencyInput } from "./currency-input";
 import { Button } from "@/app/components/ui/button";
-import { defineChain, getContract, readContract } from "thirdweb";
+import { defineChain, getContract, readContract, toEther, toWei } from "thirdweb";
 import { networkConfig } from "../config/networkConfig";
 import axios from "axios";
 import { BankInput } from "./bank-input";
@@ -126,25 +126,34 @@ export function CryptoExchangeCard() {
       });
       console.log(allowance);
       
-     if (parseInt(allowance) < BigInt(payAmount) * BigInt(10 ** 18)) {
+     if (allowance < BigInt(payAmount)) {
           //approve uZAR
-            const transaction = await prepareContractCall({
+            const transaction = prepareContractCall({
               contract: uzarContract,
               method: "function approve(address,uint256)",
-              params: [rampContractAddress, BigInt(payAmount) * BigInt(10 ** 18)],
+              params: [rampContractAddress, toWei(payAmount)],
             });
-            const { transactionHash } = await sendTransaction({
-              transaction,
-              account,
-            });
-        console.log('TX Hash', transactionHash)
+            if (account) {
+              const { transactionHash } = await sendTransaction({
+                transaction,
+                account,
+              });
+              console.log('TX Hash', transactionHash)
+            } else {
+              throw new Error("Account is undefined");
+            }
+        
         }
+
+        // random ref id
+        const transactionId = "txn_" + Math.random().toString(36).substr(2, 9);
+
 
       // transfer token
         const transferTransaction = prepareContractCall({
         contract: transactionContract,
         method: "function OnOffRamp(address,uint256,string,string)",
-        params: [addressTo, BigInt(payAmount) * BigInt(10 ** 18), refId, process.env.NEXT_PUBLIC_KOTANI_FIAT_WALLET_ID as string],
+        params: [addressTo, toWei(payAmount), transactionId, email],
       });
 
       if (account) {
