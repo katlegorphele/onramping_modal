@@ -43,15 +43,7 @@ export async function POST(req: Request) {
     const transactionId = "txn_" + Math.random().toString(36).substr(2, 9);
 
     try {
-      const transactionPayload =  {
-        paymentMethod: "CARD" as "CARD" | "PAYBYBANK",
-        currency: currency as "KES" |"ZAR" ,
-        fullName: 'Katlego R Phele',
-        phoneNumber: '+27681976458',
-        referenceId: '5f9b2c7b9c9d6b0017b4e6b1',
-        amount: amount,
-        walletId: process.env.NEXT_PUBLIC_KOTANI_WALLET_ID,
-      }
+      
 
 
       const apiKey = process.env.NEXT_PUBLIC_KOTANI_API_KEY;
@@ -84,7 +76,7 @@ export async function POST(req: Request) {
           mpesaNumber,
           bankAccount,
           transactionId,
-          kotaniPayResponse.data?.reference as string | undefined
+          
         );
       }
 
@@ -104,7 +96,7 @@ export async function POST(req: Request) {
         {
           success: false,
           message: "Failed to process payment. Please try again.",
-          error: (kotaniError as any).message
+          error: (kotaniError instanceof Error ? kotaniError.message : 'Unknown error')
         },
         { status: 500 }
       );

@@ -18,8 +18,7 @@ export async function sendPaymentTransactionEmail(
     mpesaNumber?: string | undefined,
     bankAccount?: string | undefined,
     transactionId?: string | undefined,
-    kotaniPayReference?: string | undefined,
-    receiverAddress?: string | undefined,
+
 ) {
     if (!recipientEmail) return;
 
@@ -58,7 +57,7 @@ export async function sendWithdrawalTransactionEmail(
     bankAccount?: string | undefined,
     transactionId?: string | undefined,
     kotaniPayReference?: string | undefined,
-    receiverAddress?: string | undefined,
+
 ) {
     if (!recipientEmail) return;
 
