@@ -38,9 +38,6 @@ export async function sendPaymentTransactionEmail(
                 }
       
       Transaction ID: ${transactionId}
-      KotaniPay Reference: ${kotaniPayReference}
-      
-      You will receive a confirmation once the payment is processed.
       
       Thank you for using our service!
       
