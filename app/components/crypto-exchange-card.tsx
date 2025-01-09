@@ -9,13 +9,14 @@ import {
 } from "@/app/components/ui/tabs";
 import { CurrencyInput } from "./currency-input";
 import { Button } from "@/app/components/ui/button";
-import { defineChain, getContract, readContract, } from "thirdweb";
+import { defineChain, getContract, readContract, toWei, } from "thirdweb";
 import { networkConfig } from "../config/networkConfig";
 import axios from "axios";
 import { BankInput } from "./bank-input";
 import { useActiveAccount } from "thirdweb/react";
 import { thirdwebClient } from "../config/client";
-import { prepareContractCall, sendTransaction } from "thirdweb";
+import { prepareContractCall, sendTransaction, } from "thirdweb";
+
 
 const { uZarContractAddress, rampContractAddress, chainId } = networkConfig;
 
@@ -42,13 +43,17 @@ interface ExchangeRates {
   ZAR: number;
 }
 
+interface CryptoExchangeCardProps {
+  onTabChange: (tab: string) => void;
+}
+
 const tabsTriggerData = [
   { value: "buy", label: "Buy" },
   { value: "sell", label: "Sell" },
   { value: "Transfer", label: "Transfer" },
 ];
 
-export function CryptoExchangeCard() {
+export function CryptoExchangeCard( { onTabChange }: CryptoExchangeCardProps) {
   const [activeTab, setActiveTab] = useState<string>("buy");
   const [payAmount, setPayAmount] = useState<string>("");
   const [receiveAmount, setReceiveAmount] = useState<string>("");
@@ -116,7 +121,21 @@ export function CryptoExchangeCard() {
     return true;
   };
 
+  const resetTabs = () => {
+    setPayAmount("");
+    setReceiveAmount("");
+    setCurrency("ZAR");
+    setMpesaNumber("");
+    setBankAccount("");
+    setEmail("");
+  }
+
   const handleTransfer = async () => {
+
+    if (account) {
+      console.log(account);
+    }
+
     if (!validateTransferInput()) {
       return;
     }
@@ -133,13 +152,13 @@ export function CryptoExchangeCard() {
       });
       console.log(allowance);
       
-     if (allowance < BigInt(payAmount)) {
+     if (allowance < toWei(payAmount)) {
           console.log('Approving', payAmount)
           //approve uZAR
             const transaction = prepareContractCall({
               contract: uzarContract,
               method: "function approve(address,uint256)",
-              params: [rampContractAddress, BigInt(payAmount)],
+              params: [rampContractAddress, toWei(payAmount)],
             });
             if (account) {
               const { transactionHash } = await sendTransaction({
@@ -156,12 +175,14 @@ export function CryptoExchangeCard() {
         // random ref id
         const transactionId = "txn_" + Math.random().toString(36).substr(2, 9);
 
+        console.log('Transferring', toWei(payAmount), 'to', addressTo, 'with ref', transactionId);
+
 
       // transfer token
         const transferTransaction = prepareContractCall({
         contract: transactionContract,
         method: "function OnOffRamp(address,uint256,string,string)",
-        params: [addressTo, BigInt(payAmount), transactionId, email],
+        params: [addressTo, toWei(payAmount), transactionId, email],
       });
 
       if (account) {
@@ -190,6 +211,7 @@ export function CryptoExchangeCard() {
       //   to: addressTo,
       //   email: email,
       // });
+      resetTabs();
 
 
     } catch (error: unknown) {
@@ -203,32 +225,7 @@ export function CryptoExchangeCard() {
   }
 
   const handleBuy = async () => {
-    // if (currency === "KES" && !mpesaNumber) {
-    //   alert("Please provide an M-Pesa number.");
-    //   return;
-    // }
-    // if (currency === "ZAR" && !bankAccount) {
-    //   alert("Please provide a bank account number.");
-    //   return;
-    // }
 
-    // try {
-    //   const response = await axios.post("/api/buy-token", {
-    //     amount: Number(payAmount),
-    //     currency,
-    //     mpesaNumber: currency === "KES" ? mpesaNumber : undefined,
-    //     bankAccount: currency === "ZAR" ? bankAccount : undefined,
-    //     email: email || undefined,
-    //   });
-    //   console.log('Email:', email);
-
-    //   if (response.data.success) {
-    //     alert(response.data.message);
-    //   }
-    // } catch (error: any) {
-    //   console.error("Error buying token:", error);
-    //   alert(error.response?.data?.message || "Failed to buy token. Please try again.");
-    // }
     if (!validateInput()) {
       return;
     }
@@ -245,13 +242,6 @@ export function CryptoExchangeCard() {
         receiverAddress: account?.address,
       });
 
-      // if (response.data.success) {
-      //   alert(response.data.message);
-      //   setPayAmount("");
-      //   setReceiveAmount("");
-      //   setBankAccount("");
-      //   setMpesaNumber("");
-      // }
       if (response.data?.success && response.data?.redirectUrl) {
         window.location.href = response.data?.redirectUrl; // Redirect user to the payment URL
       } else {
@@ -295,6 +285,7 @@ export function CryptoExchangeCard() {
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
+    onTabChange(value);
     // Reset amounts when switching tabs
     setPayAmount("");
     setReceiveAmount("");
@@ -435,7 +426,7 @@ export function CryptoExchangeCard() {
               />
             </div>
             <Button onClick={handleTransfer} className="w-full text-xl p-8 font-semibold">
-              {isLoading ? "Processing..." : "Sell"}
+              {isLoading ? "Processing..." : "Transfer"}
             </Button>
           </div>
 
