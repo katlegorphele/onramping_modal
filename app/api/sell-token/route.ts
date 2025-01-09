@@ -24,6 +24,9 @@ export async function POST(req: Request) {
       throw new Error("Kotani API key is not defined");
     }
     kotaniPay.auth(apiKey);
+    // generate random reference id
+    const refID = Math.random().toString(36).substr(2, 9);
+
     const kotaniPayResponse = await kotaniPay.withdrawTransactionController_mobileMoney({
       bankDetails: {
         name: 'Kat',
@@ -35,11 +38,12 @@ export async function POST(req: Request) {
       },
       currency: 'ZAR',
       amount: 10,
-      referenceId: '1234567890'
+      referenceId: refID,
     })
     console.log('KotaniPay Response:', kotaniPayResponse);
 
-    const redirectUrl = kotaniPayResponse.data?.data?.redirectUrl;
+    const redirectUrl = kotaniPayResponse.res.url;
+    console.log('Redirect URL:', redirectUrl);
     
     if (email) {
       await sendWithdrawalTransactionEmail(
@@ -61,6 +65,8 @@ export async function POST(req: Request) {
       amountReceived: amount,
       redirectUrl,
     });
+
+    
   } catch (error) {
     console.error("Error processing request:", error);
     return NextResponse.json(

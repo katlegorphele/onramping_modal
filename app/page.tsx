@@ -9,10 +9,9 @@ import WalletCard from "./components/WalletInfo";
 import { defineChain, getContract, readContract, toEther } from "thirdweb";
 import { thirdwebClient } from "./config/client";
 import { networkConfig } from "./config/networkConfig";
+import DynamicBackground from "./components/DynamicBackground";
 
 const { chainId, uZarContractAddress } = networkConfig;
-
-
 
 
 export default function Home() {
@@ -64,6 +63,7 @@ export default function Home() {
     }
   
   return (
+
     
       <main className="flex flex-col p-2 justify-center gap-y-4   md:flex-row md:justify-between items-center min-h-screen max-w-7xl md:mx-auto bg-white">
         <div className="md:w-1/2 mb-8 md:mb-0">
@@ -80,6 +80,7 @@ export default function Home() {
           <WalletCard 
           address={account.address}
           balance={balance.toString()}
+          network="Scroll Sepolia"
           />
           </>}
         </div>

@@ -65,11 +65,11 @@ export async function sendWithdrawalTransactionEmail(
         await transporter.sendMail({
             from: 'UZAR Team',
             to: recipientEmail,
-            subject: 'UZAR Withdrawal Confirmation',
+            subject: 'UZAR Sale Confirmation',
             text: `
       Dear valued customer,
       
-      Your withdrawal of ${amount} UZAR has been initiated.
+      Your sale of ${amount} UZAR has been initiated.
       ${currency === "KES"
                     ? `Payment method: M-Pesa (${mpesaNumber})`
                     : `Payment method: Bank Transfer (${bankAccount})`

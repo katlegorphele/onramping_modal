@@ -9,33 +9,29 @@ import {
 } from "@/app/components/ui/tabs";
 import { CurrencyInput } from "./currency-input";
 import { Button } from "@/app/components/ui/button";
-import { defineChain, getContract, readContract, toWei, } from "thirdweb";
+import { defineChain, getContract, readContract, toWei } from "thirdweb";
 import { networkConfig } from "../config/networkConfig";
 import axios from "axios";
 import { BankInput } from "./bank-input";
 import { useActiveAccount } from "thirdweb/react";
 import { thirdwebClient } from "../config/client";
-import { prepareContractCall, sendTransaction, } from "thirdweb";
-
+import { prepareContractCall, sendTransaction } from "thirdweb";
 
 const { uZarContractAddress, rampContractAddress, chainId } = networkConfig;
 
 const EXCHANGE_RATE_URL =
   "https://v6.exchangerate-api.com/v6/6c2c521a02e3eb57efa066fa/latest/ZAR";
 
-
 const transactionContract = getContract({
   client: thirdwebClient,
   chain: defineChain(chainId),
   address: rampContractAddress,
-
 });
 
 const uzarContract = getContract({
   client: thirdwebClient,
   chain: defineChain(chainId),
   address: uZarContractAddress,
-
 });
 
 interface ExchangeRates {
@@ -53,7 +49,7 @@ const tabsTriggerData = [
   { value: "Transfer", label: "Transfer" },
 ];
 
-export function CryptoExchangeCard( { onTabChange }: CryptoExchangeCardProps) {
+export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
   const [activeTab, setActiveTab] = useState<string>("buy");
   const [payAmount, setPayAmount] = useState<string>("");
   const [receiveAmount, setReceiveAmount] = useState<string>("");
@@ -68,12 +64,12 @@ export function CryptoExchangeCard( { onTabChange }: CryptoExchangeCardProps) {
   const [addressTo, setAddressTo] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [bankDetails, setBankDetails] = useState({
-    name: '',
-    address: '',
-    phoneNumber: '',
+    name: "",
+    address: "",
+    phoneNumber: "",
     bankCode: 2500,
-    accountNumber: '',
-    country: 'South Africa'
+    accountNumber: "",
+    country: "South Africa",
   });
 
   const account = useActiveAccount();
@@ -95,7 +91,7 @@ export function CryptoExchangeCard( { onTabChange }: CryptoExchangeCardProps) {
     }
 
     return true;
-  }
+  };
 
   const validateInput = () => {
     if (!payAmount || Number(payAmount) <= 0) {
@@ -128,10 +124,9 @@ export function CryptoExchangeCard( { onTabChange }: CryptoExchangeCardProps) {
     setMpesaNumber("");
     setBankAccount("");
     setEmail("");
-  }
+  };
 
   const handleTransfer = async () => {
-
     if (account) {
       console.log(account);
     }
@@ -151,54 +146,59 @@ export function CryptoExchangeCard( { onTabChange }: CryptoExchangeCardProps) {
         params: [account?.address || "", rampContractAddress],
       });
       console.log(allowance);
-      
-     if (allowance < toWei(payAmount)) {
-          console.log('Approving', payAmount)
-          //approve uZAR
-            const transaction = prepareContractCall({
-              contract: uzarContract,
-              method: "function approve(address,uint256)",
-              params: [rampContractAddress, toWei(payAmount)],
-            });
-            if (account) {
-              const { transactionHash } = await sendTransaction({
-                transaction,
-                account,
-              });
-              console.log('Approval confirmation', transactionHash)
-            } else {
-              throw new Error("Account is undefined");
-            }
-        
+
+      if (allowance < toWei(payAmount)) {
+        console.log("Approving", payAmount);
+        //approve uZAR
+        const transaction = prepareContractCall({
+          contract: uzarContract,
+          method: "function approve(address,uint256)",
+          params: [rampContractAddress, toWei(payAmount)],
+        });
+        if (account) {
+          const { transactionHash } = await sendTransaction({
+            transaction,
+            account,
+          });
+          console.log("Approval confirmation", transactionHash);
+        } else {
+          throw new Error("Account is undefined");
         }
+      }
 
-        // random ref id
-        const transactionId = "txn_" + Math.random().toString(36).substr(2, 9);
+      // random ref id
+      const transactionId = "txn_" + Math.random().toString(36).substr(2, 9);
 
-        console.log('Transferring', toWei(payAmount), 'to', addressTo, 'with ref', transactionId);
-
+      console.log(
+        "Transferring",
+        toWei(payAmount),
+        "to",
+        addressTo,
+        "with ref",
+        transactionId
+      );
 
       // transfer token
-        const transferTransaction = prepareContractCall({
+      const transferTransaction = prepareContractCall({
         contract: transactionContract,
         method: "function OnOffRamp(address,uint256,string,string)",
         params: [addressTo, toWei(payAmount), transactionId, email],
       });
 
       if (account) {
-        const {transactionHash} = await sendTransaction({
+        const { transactionHash } = await sendTransaction({
           transaction: transferTransaction,
           account,
         });
-        console.log('Transfer Confirmation:', transactionHash);
-        
+        console.log("Transfer Confirmation:", transactionHash);
+
         const response = await axios.post("/api/transfer-token", {
           amount: Number(payAmount),
           to: addressTo,
           email: email,
           txHash: transactionHash,
         });
-  
+
         if (response.data.success) {
           alert(response.data.message);
         }
@@ -212,20 +212,18 @@ export function CryptoExchangeCard( { onTabChange }: CryptoExchangeCardProps) {
       //   email: email,
       // });
       resetTabs();
-
-
     } catch (error: unknown) {
       console.error("Error transferring token:", error);
-      const errorMessage = (error as { response?: { message?: string } })?.response?.message ||
+      const errorMessage =
+        (error as { response?: { message?: string } })?.response?.message ||
         "Failed to process transaction. Please try again later.";
       alert(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   const handleBuy = async () => {
-
     if (!validateInput()) {
       return;
     }
@@ -245,13 +243,11 @@ export function CryptoExchangeCard( { onTabChange }: CryptoExchangeCardProps) {
       if (response.data?.success && response.data?.redirectUrl) {
         window.location.href = response.data?.redirectUrl; // Redirect user to the payment URL
       } else {
-        console.error('Payment initiation failed:', response.data?.message);
+        console.error("Payment initiation failed:", response.data?.message);
       }
     } catch (error) {
       console.error("Error buying token:", error);
-      alert(
-        "Failed to process transaction. Please try again later."
-      );
+      alert("Failed to process transaction. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -267,10 +263,10 @@ export function CryptoExchangeCard( { onTabChange }: CryptoExchangeCardProps) {
           ...bankDetails,
           bankCode: parseInt(bankDetails.bankCode.toString()),
         },
-        currency: 'ZAR',
-        referenceId: 'txn_' + Math.random().toString(36).substr(2, 9)
+        currency: "ZAR",
+        referenceId: "txn_" + Math.random().toString(36).substr(2, 9),
       });
-  
+
       if (response.data.success) {
         alert(response.data.message);
       }
@@ -281,7 +277,6 @@ export function CryptoExchangeCard( { onTabChange }: CryptoExchangeCardProps) {
       setIsLoading(false);
     }
   };
-
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -342,8 +337,9 @@ export function CryptoExchangeCard( { onTabChange }: CryptoExchangeCardProps) {
 
   const handlePayAmountChange = (value: string) => {
     setPayAmount(value);
-    setReceiveAmount(calculateExchangeAmount(value, { selectedCurrency: currency }));
-
+    setReceiveAmount(
+      calculateExchangeAmount(value, { selectedCurrency: currency })
+    );
   };
 
   useEffect(() => {
@@ -378,7 +374,6 @@ export function CryptoExchangeCard( { onTabChange }: CryptoExchangeCardProps) {
         </TabsList>
         <TabsContent value="Transfer">
           <div className="space-y-4">
-
             <div>
               <label
                 htmlFor="addressTo"
@@ -425,11 +420,13 @@ export function CryptoExchangeCard( { onTabChange }: CryptoExchangeCardProps) {
                 placeholder="Enter your email for transaction updates"
               />
             </div>
-            <Button onClick={handleTransfer} className="w-full text-xl p-8 font-semibold">
+            <Button
+              onClick={handleTransfer}
+              className="w-full text-xl p-8 font-semibold"
+            >
               {isLoading ? "Processing..." : "Transfer"}
             </Button>
           </div>
-
         </TabsContent>
 
         {/* buy tab */}
@@ -461,7 +458,10 @@ export function CryptoExchangeCard( { onTabChange }: CryptoExchangeCardProps) {
             </div>
             {currency === "KES" && (
               <div>
-                <label htmlFor="mpesa-number" className="text-sm text-gray-500 mx-3 font-semibold">
+                <label
+                  htmlFor="mpesa-number"
+                  className="text-sm text-gray-500 mx-3 font-semibold"
+                >
                   M-Pesa Number
                 </label>
                 <input
@@ -481,7 +481,8 @@ export function CryptoExchangeCard( { onTabChange }: CryptoExchangeCardProps) {
                   value={bankAccount}
                   onChange={setBankAccount}
                   onBankChange={(bank) => console.log(bank)}
-                  selectedBank={bankAccount} />
+                  selectedBank={bankAccount}
+                />
               </div>
             )}
             {/* <p className="text-sm text-gray-500">1-5000 ZAR</p> */}
@@ -495,108 +496,167 @@ export function CryptoExchangeCard( { onTabChange }: CryptoExchangeCardProps) {
             <p className="text-sm text-gray-500 mx-3">1 uZar = 1 ZAR</p>
 
             {/* <LoginButton /> */}
-            <Button onClick={handleBuy} className="w-full text-xl p-8 font-semibold">
-            {isLoading ? "Processing..." : "Buy"}
+            <Button
+              onClick={handleBuy}
+              className="w-full text-xl p-8 font-semibold"
+            >
+              {isLoading ? "Processing..." : "Buy"}
             </Button>
           </div>
         </TabsContent>
 
         {/* sell tab */}
         <TabsContent value="sell">
-  <div className="space-y-4">
-    <CurrencyInput
-      label="You'll sell"
-      value={payAmount}
-      onChange={handlePayAmountChange}
-      currency="uZar"
-      onCurrencyChange={handleCurrencyChanged}
-    />
-    <p className="text-sm text-gray-500">1-10,000 uZar</p>
-    
-    <CurrencyInput
-      label="You'll receive"
-      value={receiveAmount}
-      onChange={setReceiveAmount}
-      currency="ZAR"
-      onCurrencyChange={handleCurrencyChanged}
-    />
-    <p className="text-sm text-gray-500">1 uZar = 18.3932 ZAR</p>
+          <div className="space-y-4">
+            <CurrencyInput
+              label="You'll sell"
+              value={payAmount}
+              onChange={handlePayAmountChange}
+              currency="uZar"
+              onCurrencyChange={handleCurrencyChanged}
+            />
+            <p className="text-sm text-gray-500">1-10,000 uZar</p>
 
-    <div>
-      <label htmlFor="name" className="text-sm text-gray-500 mx-3 font-semibold">
-        Full Name
-      </label>
-      <input
-        id="name"
-        type="text"
-        onChange={(e) => setBankDetails(prev => ({ ...prev, name: e.target.value }))}
-        className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
-        placeholder="Enter your full name"
-      />
-    </div>
+            <CurrencyInput
+              label="You'll receive"
+              value={receiveAmount}
+              onChange={setReceiveAmount}
+              currency="ZAR"
+              onCurrencyChange={handleCurrencyChanged}
+            />
+            <p className="text-sm text-gray-500">1 uZar = 18.3932 ZAR</p>
 
-    <div>
-      <label htmlFor="address" className="text-sm text-gray-500 mx-3 font-semibold">
-        Address
-      </label>
-      <input
-        id="address"
-        type="text"
-        onChange={(e) => setBankDetails(prev => ({ ...prev, address: e.target.value }))}
-        className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
-        placeholder="Enter your address"
-      />
-    </div>
+            <div>
+              <label
+                htmlFor="name"
+                className="text-sm text-gray-500 mx-3 font-semibold"
+              >
+                Full Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                onChange={(e) =>
+                  setBankDetails((prev) => ({ ...prev, name: e.target.value }))
+                }
+                className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
+                placeholder="Enter your full name"
+              />
+            </div>
 
-    <div>
-      <label htmlFor="phone" className="text-sm text-gray-500 mx-3 font-semibold">
-        Phone Number
-      </label>
-      <input
-        id="phone"
-        type="tel"
-        onChange={(e) => setBankDetails(prev => ({ ...prev, phoneNumber: e.target.value }))}
-        className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
-        placeholder="+27 Phone Number"
-      />
-    </div>
+            <div>
+              <label
+                htmlFor="address"
+                className="text-sm text-gray-500 mx-3 font-semibold"
+              >
+                Address
+              </label>
+              <input
+                id="address"
+                type="text"
+                onChange={(e) =>
+                  setBankDetails((prev) => ({
+                    ...prev,
+                    address: e.target.value,
+                  }))
+                }
+                className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
+                placeholder="Enter your address"
+              />
+            </div>
 
-    <div>
-      <label htmlFor="bankCode" className="text-sm text-gray-500 mx-3 font-semibold">
-        Bank Code
-      </label>
-      <input
-        id="bankCode"
-        type="text"
-        onChange={(e) => setBankDetails(prev => ({ ...prev, bankCode: parseInt(e.target.value) || 0 }))}
-        className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
-        placeholder="Enter bank code"
-      />
-    </div>
+            <div>
+              <label
+                htmlFor="phone"
+                className="text-sm text-gray-500 mx-3 font-semibold"
+              >
+                Phone Number
+              </label>
+              <input
+                id="phone"
+                type="tel"
+                onChange={(e) =>
+                  setBankDetails((prev) => ({
+                    ...prev,
+                    phoneNumber: e.target.value,
+                  }))
+                }
+                className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
+                placeholder="+27 Phone Number"
+              />
+            </div>
 
-    <div>
-      <label htmlFor="accountNumber" className="text-sm text-gray-500 mx-3 font-semibold">
-        Account Number
-      </label>
-      <input
-        id="accountNumber"
-        type="text"
-        onChange={(e) => setBankDetails(prev => ({ ...prev, accountNumber: e.target.value }))}
-        className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
-        placeholder="Enter account number"
-      />
-    </div>
+            <div>
+              <label
+                htmlFor="bankCode"
+                className="text-sm text-gray-500 mx-3 font-semibold"
+              >
+                Bank Code
+              </label>
+              <input
+                id="bankCode"
+                type="text"
+                onChange={(e) =>
+                  setBankDetails((prev) => ({
+                    ...prev,
+                    bankCode: parseInt(e.target.value) || 0,
+                  }))
+                }
+                className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
+                placeholder="Enter bank code"
+              />
+            </div>
 
-    <Button onClick={handleSell} className="w-full text-xl p-8 font-semibold">
-      {isLoading ? "Processing..." : "Sell"}
-    </Button>
-  </div>
-</TabsContent>
+            <div>
+              <label
+                htmlFor="accountNumber"
+                className="text-sm text-gray-500 mx-3 font-semibold"
+              >
+                Account Number
+              </label>
+              <input
+                id="accountNumber"
+                type="text"
+                onChange={(e) =>
+                  setBankDetails((prev) => ({
+                    ...prev,
+                    accountNumber: e.target.value,
+                  }))
+                }
+                className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
+                placeholder="Enter account number"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="email"
+                className="text-sm text-gray-500 mx-3 font-semibold"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
+                placeholder="Enter your email for transaction updates"
+              />
+            </div>
+            
+            
+
+            <Button
+              onClick={handleSell}
+              className="w-full text-xl p-8 font-semibold"
+            >
+              {isLoading ? "Processing..." : "Sell"}
+            </Button>
+          </div>
+        </TabsContent>
       </Tabs>
     </div>
   );
 }
-
-
 
 export default CryptoExchangeCard;

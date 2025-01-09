@@ -1,11 +1,12 @@
 import React from 'react';
 import { Copy } from 'lucide-react';
-import { useDisconnect } from 'thirdweb/react';
+
 
 const WalletCard = ({ 
   address = '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
   balance = '0.00',
-  currency = 'UZAR'
+  currency = 'UZAR',
+  network = 'Ethereum',
 }) => {
   
   const shortenAddress = (addr:string) => {
@@ -41,7 +42,7 @@ const WalletCard = ({
       <div className="flex justify-between items-center">
         <div className="flex flex-col">
           <span className="text-xs opacity-80">Network</span>
-          <span className="text-sm font-medium">Ethereum</span>
+          <span className="text-sm font-medium">{network}</span>
         </div>
         {/* <div className="h-6 w-6 rounded-full bg-green-400 flex items-center justify-center">
           <div onClick={disconnect} className="h-2 w-2 rounded-full bg-white"></div>
