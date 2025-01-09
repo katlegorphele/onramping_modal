@@ -9,7 +9,7 @@ import WalletCard from "./components/WalletInfo";
 import { defineChain, getContract, readContract, toEther } from "thirdweb";
 import { thirdwebClient } from "./config/client";
 import { networkConfig } from "./config/networkConfig";
-import DynamicBackground from "./components/DynamicBackground";
+// import DynamicBackground from "./components/DynamicBackground";
 
 const { chainId, uZarContractAddress } = networkConfig;
 
