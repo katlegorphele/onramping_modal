@@ -43,6 +43,15 @@ interface CryptoExchangeCardProps {
   onTabChange: (tab: string) => void;
 }
 
+interface BankDetails {
+  name: string;
+  address: string;
+  phoneNumber: string;
+  bankCode: number;
+  accountNumber: string;
+  country: string;
+}
+
 const tabsTriggerData = [
   { value: "buy", label: "Buy" },
   { value: "sell", label: "Sell" },
@@ -50,6 +59,7 @@ const tabsTriggerData = [
 ];
 
 export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
+  // The props are used to update the home page text when switching tabs
   const [activeTab, setActiveTab] = useState<string>("buy");
   const [payAmount, setPayAmount] = useState<string>("");
   const [receiveAmount, setReceiveAmount] = useState<string>("");
@@ -63,8 +73,8 @@ export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
   const [email, setEmail] = useState<string>("");
   const [addressTo, setAddressTo] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [bankDetails, setBankDetails] = useState({
-    Username: "",
+  const [bankDetails, setBankDetails] = useState<BankDetails>({
+    name: "",
     address: "",
     phoneNumber: "",
     bankCode: 2500,
@@ -124,6 +134,14 @@ export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
     setMpesaNumber("");
     setBankAccount("");
     setEmail("");
+    setBankDetails({
+      name: "",
+      address: "",
+      phoneNumber: "",
+      bankCode: 123456,
+      accountNumber: "",
+      country: "South Africa",
+    });
   };
 
   const handleTransfer = async () => {
@@ -256,12 +274,23 @@ export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
   const handleSell = async () => {
     try {
       setIsLoading(true);
+
+      if (!bankDetails.name || !bankDetails.address || !bankDetails.phoneNumber || 
+          !bankDetails.accountNumber || !bankDetails.country) {
+        alert("Please fill in all bank details");
+        return;
+      }
+
       const response = await axios.post("/api/sell-token", {
         amount: Number(payAmount),
         email: email || undefined,
         bankDetails: {
-          ...bankDetails,
-          bankCode: parseInt(bankDetails.bankCode.toString()),
+          name: bankDetails.name,
+          address: bankDetails.address,
+          phoneNumber: bankDetails.phoneNumber,
+          bankCode: bankDetails.bankCode,
+          accountNumber: bankDetails.accountNumber,
+          country: 'South Africa'
         },
         currency: "ZAR",
         referenceId: "txn_" + Math.random().toString(36).substr(2, 9),
@@ -270,6 +299,7 @@ export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
       if (response.data.success) {
         alert(response.data.message);
       }
+      resetTabs();
     } catch (error) {
       console.error("Error selling token:", error);
       alert("Failed to sell token. Please try again.");
@@ -372,6 +402,8 @@ export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
             </TabsTrigger>
           ))}
         </TabsList>
+
+        {/* Transfer Tab */}
         <TabsContent value="Transfer">
           <div className="space-y-4">
             <div>
@@ -574,7 +606,7 @@ export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
               </label>
               <input
                 id="phone"
-                type="tel"
+                type="text"
                 onChange={(e) =>
                   setBankDetails((prev) => ({
                     ...prev,

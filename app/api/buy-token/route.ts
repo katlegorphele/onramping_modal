@@ -11,7 +11,7 @@ export async function POST(req: Request) {
       email,
       receiverAddress,
     } = await req.json();
-    console.log("Vars:", amount, currency, mpesaNumber, bankAccount, email);
+
 
     // Validate required fields
     if (!amount || amount <= 0) {
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     const transactionId = "txn_" + Math.random().toString(36).substr(2, 9);
 
     try {
-      const url = "https://api.kotanipay.io/api/v3/onramp/crypto";
+      const url = `${process.env.NEXT_PUBLIC_KOTANI_BASE_URL_PROD}onramp/crypto`;
       const options = {
         method: 'POST',
         headers: {
@@ -67,6 +67,8 @@ export async function POST(req: Request) {
 
       const KotaniPayResponse = await fetch(url, options)
       .then((res) => res.json())
+
+      console.log(KotaniPayResponse);
       
       const redirectUrl = KotaniPayResponse.data?.data?.redirectUrl;
 
@@ -82,6 +84,8 @@ export async function POST(req: Request) {
           transactionId
         );
       }
+
+      
 
       return NextResponse.json({
         success: true,
