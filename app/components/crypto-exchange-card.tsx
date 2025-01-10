@@ -64,7 +64,7 @@ export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
   const [addressTo, setAddressTo] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [bankDetails, setBankDetails] = useState({
-    name: "",
+    Username: "",
     address: "",
     phoneNumber: "",
     bankCode: 2500,

@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
-import kotaniPay from '@api/kotani-pay';
-import {sendPaymentTransactionEmail} from "@/app/utils/sendMail";
-
+import { sendPaymentTransactionEmail } from "@/app/utils/sendMail";
 
 export async function POST(req: Request) {
   try {
-    const { amount, currency, mpesaNumber, bankAccount, email, receiverAddress } = await req.json();
-    console.log('Vars:', amount, currency, mpesaNumber, bankAccount, email);  
+    const {
+      amount,
+      currency,
+      mpesaNumber,
+      bankAccount,
+      email,
+      receiverAddress,
+    } = await req.json();
+    console.log("Vars:", amount, currency, mpesaNumber, bankAccount, email);
 
     // Validate required fields
     if (!amount || amount <= 0) {
@@ -43,29 +48,28 @@ export async function POST(req: Request) {
     const transactionId = "txn_" + Math.random().toString(36).substr(2, 9);
 
     try {
+      const url = "https://api.kotanipay.io/api/v3/onramp/crypto";
+      const options = {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          authorization: `Bearer ${process.env.NEXT_PUBLIC_KOTANI_API_KEY}`
+        },
+        body: JSON.stringify({
+          chain: 'LISK',
+          token: 'USDC',
+          receiverAddress: receiverAddress,
+          cryptoAmount: amount,
+          referenceId: transactionId
+        })
+      };
+
+      const KotaniPayResponse = await fetch(url, options)
+      .then((res) => res.json())
       
+      const redirectUrl = KotaniPayResponse.data?.data?.redirectUrl;
 
-
-      const apiKey = process.env.NEXT_PUBLIC_KOTANI_API_KEY;
-      if (!apiKey) {
-        throw new Error("Kotani API key is not defined");
-      }
-      kotaniPay.auth(apiKey);
-      // console.log('Payload:', transactionPayload);
-      // generate random txn reference
-      const ref_id = Math.random().toString(36).substr(2, 9);
-      const kotaniPayResponse = await kotaniPay.onrampController_onramp({
-        bankCheckout: {paymentMethod: 'CARD', fullName: 'KAT', phoneNumber: '+27681976458'},
-        currency: 'ZAR',
-        chain: 'LISK',
-        token: 'CUSD',
-        fiatAmount: 11,
-        receiverAddress,
-        referenceId: ref_id,
-      })
-      console.log('KotaniPay Response:', kotaniPayResponse);
-
-      const redirectUrl = kotaniPayResponse.data?.data?.redirectUrl;
 
       // Send email notification
       if (email) {
@@ -75,33 +79,36 @@ export async function POST(req: Request) {
           currency,
           mpesaNumber,
           bankAccount,
-          transactionId,
-          
+          transactionId
         );
       }
 
       return NextResponse.json({
         success: true,
-        message: `Successfully initiated purchase of ${amount} UZAR using ${currency === "KES" ? `M-Pesa (${mpesaNumber})` : `bank account (${bankAccount})`
-          }.`,
+        message: `Successfully initiated purchase of ${amount} UZAR using ${
+          currency === "KES"
+            ? `M-Pesa (${mpesaNumber})`
+            : `bank account (${bankAccount})`
+        }.`,
         transactionId,
-        kotaniPayReference: kotaniPayResponse.data?.reference,
+        // kotaniPayReference: kotaniPayResponse.data?.reference,
         amountReceived: amount,
         redirectUrl,
       });
-
     } catch (kotaniError) {
       console.error("KotaniPay API error:", kotaniError);
       return NextResponse.json(
         {
           success: false,
           message: "Failed to process payment. Please try again.",
-          error: (kotaniError instanceof Error ? kotaniError.message : 'Unknown error')
+          error:
+            kotaniError instanceof Error
+              ? kotaniError.message
+              : "Unknown error",
         },
         { status: 500 }
       );
     }
-
   } catch (error) {
     console.error("Error processing request:", error);
     return NextResponse.json(
