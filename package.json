@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@api/kotani-pay": "file:.api/apis/kotani-pay",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-label": "^2.1.1",
     "@radix-ui/react-select": "^2.1.4",

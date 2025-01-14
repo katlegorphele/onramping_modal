@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     const transactionId = "txn_" + Math.random().toString(36).substr(2, 9);
     
     try {
-      const url = `${process.env.NEXT_PUBLIC_KOTANI_BASE_URL_PROD}withdraw/v2/bank`;
+      const url = `${process.env.NEXT_PUBLIC_KOTANI_BASE_URL_PROD}/withdraw/v2/bank`;
       const options = {
         method: "POST",
         headers: {

@@ -48,19 +48,17 @@ export async function POST(req: Request) {
     const transactionId = "txn_" + Math.random().toString(36).substr(2, 9);
 
     try {
-      const url = `${process.env.NEXT_PUBLIC_KOTANI_BASE_URL_PROD}onramp/crypto`;
+      const url = `${process.env.NEXT_PUBLIC_KOTANI_BASE_URL_PROD}/onramp`;
       const options = {
         method: 'POST',
-        headers: {
-          accept: 'application/json',
-          'content-type': 'application/json',
-          authorization: `Bearer ${process.env.NEXT_PUBLIC_KOTANI_API_KEY}`
-        },
+        headers: {accept: 'application/json', 'content-type': 'application/json'},
         body: JSON.stringify({
+          bankCheckout: {paymentMethod: 'CARD', fullName: 'kl', phoneNumber: '+27681976458'},
+          currency: 'ZAR',
           chain: 'LISK',
-          token: 'USDC',
+          token: 'USDT',
+          fiatAmount: amount,
           receiverAddress: receiverAddress,
-          cryptoAmount: amount,
           referenceId: transactionId
         })
       };
@@ -68,7 +66,15 @@ export async function POST(req: Request) {
       const KotaniPayResponse = await fetch(url, options)
       .then((res) => res.json())
 
-      console.log(KotaniPayResponse);
+      
+      if (!KotaniPayResponse.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: KotaniPayResponse.message,
+          }
+        );
+      }
       
       const redirectUrl = KotaniPayResponse.data?.data?.redirectUrl;
 
