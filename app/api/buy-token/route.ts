@@ -10,7 +10,10 @@ export async function POST(req: Request) {
       bankAccount,
       email,
       receiverAddress,
+      bankDetails
     } = await req.json();
+
+    console.log('variables', amount, currency, mpesaNumber, bankAccount, email, receiverAddress, bankDetails);
 
 
     // Validate required fields
@@ -24,25 +27,35 @@ export async function POST(req: Request) {
       );
     }
 
-    if (currency === "KES" && !mpesaNumber) {
+    if (!bankDetails.name || !bankDetails.phoneNumber) {
       return NextResponse.json(
         {
           success: false,
-          message: "M-Pesa number is required for KES transactions.",
+          message: "Please provide your name and phone number.",
         },
         { status: 400 }
       );
     }
 
-    if (currency === "ZAR" && !bankAccount) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Bank account number is required for ZAR transactions.",
-        },
-        { status: 400 }
-      );
-    }
+    // if (currency === "KES" && !mpesaNumber) {
+    //   return NextResponse.json(
+    //     {
+    //       success: false,
+    //       message: "M-Pesa number is required for KES transactions.",
+    //     },
+    //     { status: 400 }
+    //   );
+    // }
+
+    // if (currency === "ZAR" && !bankAccount) {
+    //   return NextResponse.json(
+    //     {
+    //       success: false,
+    //       message: "Bank account number is required for ZAR transactions.",
+    //     },
+    //     { status: 400 }
+    //   );
+    // }
 
     // Generate transaction ID
     const transactionId = "txn_" + Math.random().toString(36).substr(2, 9);
@@ -53,7 +66,7 @@ export async function POST(req: Request) {
         method: 'POST',
         headers: {accept: 'application/json', 'content-type': 'application/json'},
         body: JSON.stringify({
-          bankCheckout: {paymentMethod: 'CARD', fullName: 'kl', phoneNumber: '+27681976458'},
+          bankCheckout: {paymentMethod: 'CARD', fullName: bankDetails.name, phoneNumber: bankDetails.phoneNumber},
           currency: 'ZAR',
           chain: 'LISK',
           token: 'USDT',

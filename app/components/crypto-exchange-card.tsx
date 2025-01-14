@@ -114,15 +114,15 @@ export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
       return false;
     }
 
-    if (currency === "KES" && !mpesaNumber) {
-      alert("Please provide an M-Pesa number.");
-      return false;
-    }
+    // if (currency === "KES" && !mpesaNumber) {
+    //   alert("Please provide an M-Pesa number.");
+    //   return false;
+    // }
 
-    if (currency === "ZAR" && !bankAccount) {
-      alert("Please provide bank account details.");
-      return false;
-    }
+    // if (currency === "ZAR" && !bankAccount) {
+    //   alert("Please provide bank account details.");
+    //   return false;
+    // }
 
     return true;
   };
@@ -256,6 +256,10 @@ export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
         bankAccount: currency === "ZAR" ? bankAccount : undefined,
         email: email,
         receiverAddress: account?.address,
+        bankDetails: {
+          name: bankDetails.name,
+          phoneNumber: bankDetails.phoneNumber,
+        },
       });
 
       if (response.data?.success && response.data?.redirectUrl) {
@@ -471,24 +475,10 @@ export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
               currency="ZAR"
               onCurrencyChange={handleCurrencyChanged}
             />
+            
 
-            <div>
-              <label
-                htmlFor="email"
-                className="text-sm text-gray-500 mx-3 font-semibold"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
-                placeholder="Enter your email for transaction updates"
-              />
-            </div>
-            {currency === "KES" && (
+            
+            {/* {currency === "KES" && (
               <div>
                 <label
                   htmlFor="mpesa-number"
@@ -505,8 +495,8 @@ export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
                   placeholder="Enter your M-Pesa number"
                 />
               </div>
-            )}
-            {currency === "ZAR" && (
+            )} */}
+            {/* {currency === "ZAR" && (
               <div>
                 <BankInput
                   label="Enter Bank Details"
@@ -516,7 +506,7 @@ export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
                   selectedBank={bankAccount}
                 />
               </div>
-            )}
+            )} */}
             {/* <p className="text-sm text-gray-500">1-5000 ZAR</p> */}
             <CurrencyInput
               label="You'll receive"
@@ -525,8 +515,60 @@ export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
               currency="uZar"
               onCurrencyChange={handleCurrencyChanged}
             />
-            <p className="text-sm text-gray-500 mx-3">1 uZar = 1 ZAR</p>
-
+            <p className="text-sm text-gray-500 mx-3">1 UZAR = R1 </p>
+            <div>
+              <label
+                htmlFor="name"
+                className="text-sm text-gray-500 mx-3 font-semibold"
+              >
+                Full Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                onChange={(e) =>
+                  setBankDetails((prev) => ({ ...prev, name: e.target.value }))
+                }
+                className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
+                placeholder="Enter your full name"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="phone"
+                className="text-sm text-gray-500 mx-3 font-semibold"
+              >
+                Phone Number
+              </label>
+              <input
+                id="phone"
+                type="text"
+                onChange={(e) =>
+                  setBankDetails((prev) => ({
+                    ...prev,
+                    phoneNumber: e.target.value,
+                  }))
+                }
+                className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
+                placeholder="+27 Phone Number"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="email"
+                className="text-sm text-gray-500 mx-3 font-semibold"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="ring-1 ring-gray-100 w-full flex justify-between items-center p-2 px-3 rounded-lg"
+                placeholder="Enter your email for transaction updates"
+              />
+            </div>
             {/* <LoginButton /> */}
             <Button
               onClick={handleBuy}
@@ -547,7 +589,7 @@ export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
               currency="uZar"
               onCurrencyChange={handleCurrencyChanged}
             />
-            <p className="text-sm text-gray-500">1-10,000 uZar</p>
+            {/* <p className="text-sm text-gray-500">1-10,000 uZar</p> */}
 
             <CurrencyInput
               label="You'll receive"
@@ -556,7 +598,7 @@ export function CryptoExchangeCard({ onTabChange }: CryptoExchangeCardProps) {
               currency="ZAR"
               onCurrencyChange={handleCurrencyChanged}
             />
-            <p className="text-sm text-gray-500">1 uZar = 18.3932 ZAR</p>
+            {/* <p className="text-sm text-gray-500">1 uZar = 18.3932 ZAR</p> */}
 
             <div>
               <label
