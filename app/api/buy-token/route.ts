@@ -59,12 +59,17 @@ export async function POST(req: Request) {
 
     // Generate transaction ID
     const transactionId = "txn_" + Math.random().toString(36).substr(2, 9);
+    
 
     try {
       const url = `${process.env.NEXT_PUBLIC_KOTANI_BASE_URL_PROD}/onramp`;
       const options = {
         method: 'POST',
-        headers: {accept: 'application/json', 'content-type': 'application/json'},
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          authorization: `Bearer ${process.env.NEXT_PUBLIC_KOTANI_API_KEY}`
+        },
         body: JSON.stringify({
           bankCheckout: {paymentMethod: 'CARD', fullName: bankDetails.name, phoneNumber: bankDetails.phoneNumber},
           currency: 'ZAR',
@@ -89,7 +94,8 @@ export async function POST(req: Request) {
         );
       }
       
-      const redirectUrl = KotaniPayResponse.data?.data?.redirectUrl;
+      const redirectUrl = KotaniPayResponse.data?.redirectUrl;
+      console.log('redirectUrl', redirectUrl);
 
 
       // Send email notification
@@ -103,6 +109,8 @@ export async function POST(req: Request) {
           transactionId
         );
       }
+
+      console.log('KotaniPayResponse', KotaniPayResponse);
 
       
 
