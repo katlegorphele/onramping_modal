@@ -12,7 +12,7 @@ import { Button } from "@/app/components/ui/button";
 import { defineChain, getContract, readContract, toWei } from "thirdweb";
 import { networkConfig } from "../config/networkConfig";
 import axios from "axios";
-import { BankInput } from "./bank-input";
+// import { BankInput } from "./bank-input";
 import { useActiveAccount } from "thirdweb/react";
 import { thirdwebClient } from "../config/client";
 import { prepareContractCall, sendTransaction } from "thirdweb";
