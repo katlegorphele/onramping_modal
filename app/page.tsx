@@ -9,6 +9,7 @@ import WalletCard from "./components/WalletInfo";
 import { defineChain, getContract, readContract, toEther } from "thirdweb";
 import { thirdwebClient } from "./config/client";
 import { networkConfig } from "./config/networkConfig";
+import Image from "next/image";
 // import DynamicBackground from "./components/DynamicBackground";
 
 const { chainId, uZarContractAddress } = networkConfig;
@@ -66,6 +67,25 @@ export default function Home() {
 
     
       <main className="flex flex-col p-2 justify-center gap-y-4   md:flex-row md:justify-between items-center min-h-screen max-w-7xl md:mx-auto bg-white">
+
+        {/* Top-right image */}
+        <Image 
+          src="/TopRightbg.png" 
+          alt="Decorative background" 
+          className="absolute top-0 right-0 w-1/3 md:w-1/4 opacity-60"
+          width={1000}
+          height={1000}
+        />
+
+        {/* Bottom-left mirrored image */}
+        <Image 
+          src="/TopRightbg.png" 
+          alt="Decorative background mirrored" 
+          className="absolute bottom-0 left-0 w-1/3 md:w-1/4 transform scale-x-[-1]"
+          width={10000}
+          height={10000}
+        />
+
         <div className="md:w-1/2 mb-8 md:mb-0">
           <h1 className="text-5xl font-bold mb-4">{UpperCase(selectedTab)} UZAR in a few steps</h1>
           <p className="text-xl text-gray-600 mb-14">
