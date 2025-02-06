@@ -87,22 +87,6 @@ export default function Home() {
         />
 
         <div className="md:w-1/2 mb-8 md:mb-0">
-          <h1 className="text-5xl font-bold mb-4">{UpperCase(selectedTab)} UZAR in a few steps</h1>
-          <p className="text-xl text-gray-600 mb-14">
-            Exchange from USDT, USDC, Fiat, and more popular crypto
-          </p>
-          
-          {account && 
-          <>
-          <p className="text-xl text-gray-600">
-            Connected Account
-          </p>
-          <WalletCard 
-          address={account.address}
-          balance={balance.toString()}
-          network="Scroll Sepolia"
-          />
-          </>}
         </div>
         <div className="md:w-1/2">
         {account ? (
